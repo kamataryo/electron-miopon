@@ -19,13 +19,13 @@ Promise.all([
   app.whenReady(),
   getAccessToken(),
   store.get(EXPIRES_AT),
-  store.get(DEVELOPER_ID)
+  store.get(DEVELOPER_ID),
 ])
   .catch(err => console.log(err.type))
   .then(result => {
     configureElectron()
 
-    const [_0, accessToken, expiresAt, developerId] = result
+    const [, accessToken, expiresAt, developerId] = result
     const isExpired = Date.now() > expiresAt
 
     return !accessToken || isExpired || !developerId
