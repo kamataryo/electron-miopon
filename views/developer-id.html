@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+
+<body>
+  <h1>Enter Your Developer ID</h1>
+  <ol>
+    <li>1. Access To <a href="https://api.iijmio.jp/">https://api.iijmio.jp/</a></li>
+    <li>2. Get Developer ID with your IIJMio account.</li>
+    <li>3. Enter the Developer ID and register Electron Miopon as an your app.</li>
+  </ol>
+
+  <label for="developer-id">Developer ID</label>
+  <input type="text" id="developer-id" />
+  <button type="button" id="register">register</button>
+  <script>
+    const {
+      ipcRenderer
+    } = require('electron')
+    const button = document.getElementById('register')
+    const input = document.getElementById('developer-id')
+    button.addEventListener('click', () => {
+      const developerId = input.value
+      ipcRenderer.send('developer_id', developerId)
+    })
+  </script>
+</body>
+
+</html>

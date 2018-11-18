@@ -1,54 +1,46 @@
+const { app } = require('electron')
 const Store = require('./lib/store')
-const path = require('path')
 const { getAccessToken, setAccessToken } = require('./lib/keychain')
 const oAuth = require('./lib/o-auth')
-const { app, Menu, Tray } = require('electron')
 const axios = require('axios')
-const { formatCouponInfo } = require('./lib/format')
 const store = new Store({ configName: 'user-data' })
+const configure = require('./lib/configure')
+const { updateTray } = require('./lib/tray')
 const EXPIRES_AT = 'expires_at'
+const DEVELOPER_ID = 'developer_id'
 
-Promise.all([getAccessToken(), store.get(EXPIRES_AT)])
+const request = () =>
+  axios
+    .get('https://api.iijmio.jp/mobile/d/v2/coupon/')
+    .then(({ data }) => updateTray(data))
+
+Promise.all([
+  app.whenReady(),
+  getAccessToken(),
+  store.get(EXPIRES_AT),
+  store.get(DEVELOPER_ID)
+])
   .catch(err => console.log(err.type))
-  .then((result = []) => {
-    const [accessToken, expiresAt] = result
+  .then(result => {
+    const [_0, accessToken, expiresAt, developerId] = result
     const isExpired = Date.now() > expiresAt
-    return !accessToken || isExpired ? oAuth() : { accessToken, expiresAt }
+
+    return !accessToken || isExpired || !developerId
+      ? oAuth(developerId)
+      : { developerId, accessToken, expiresAt }
   })
-  .then(({ accessToken, expiresAt }) => {
+  .then(({ developerId, accessToken, expiresAt }) => {
+    // store data
+    store.set(DEVELOPER_ID, developerId)
+    setAccessToken(accessToken)
     store.set(EXPIRES_AT, expiresAt)
-    return setAccessToken(accessToken)
-  })
-  .then(({ accessToken, developerId }) => {
-    axios.defaults.headers.common['X-IIJmio-Developer'] = developerId
-    axios.defaults.headers.common['X-IIJmio-Authorization'] = accessToken
-    axios.defaults.headers.put['Content-Type'] = 'appication/json'
 
-    const iconName = 'iconTemplate.png'
-    const iconPath = path.join(__dirname, iconName)
-    const appIcon = new Tray(iconPath)
-    app.on('window-all-closed', () => appIcon && appIcon.destroy())
+    // configure app
+    configure(developerId, accessToken)
 
-    let counter = 0
-
-    setInterval(() => {
-      // クーポン残量照会・クーポンのON/OFF状態照会 5 requests/min.
-      axios.get('https://api.iijmio.jp/mobile/d/v2/coupon/').then(res => {
-        if (res.data.returnCode === 'OK') {
-          counter++
-          const info = formatCouponInfo(res.data.couponInfo)
-          const labels = Object.keys(info).map(id => ({
-            label: `${id}: 残り${info[id]}MB`
-          }))
-          const contextMenu = Menu.buildFromTemplate([
-            { label: `リクエスト回数: ${counter}` },
-            ...labels
-          ])
-          appIcon.setToolTip('test')
-          appIcon.setContextMenu(contextMenu)
-        }
-      })
-    }, 30 * 1000)
+    // start loop
+    request()
+    setInterval(request, 60 * 1000)
 
     // // クーポンのON/OFF 1 request / min.
     // axios.put('https://api.iijmio.jp/mobile/d/v2/coupon/').then(console.log)
