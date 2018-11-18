@@ -42,7 +42,7 @@ Promise.all([
 
     // start loop
     request()
-    setInterval(request, 60 * 1000)
+    setInterval(request, 60 * 1000 * 20) // once a 20 min.
 
     // // クーポンのON/OFF 1 request / min.
     // axios.put('https://api.iijmio.jp/mobile/d/v2/coupon/').then(console.log)
