@@ -5,26 +5,58 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>Document</title>
+  <title>Configuration</title>
+  <link rel="stylesheet" href="./bulma.css" />
 </head>
 
 <body>
-  <h1>Enter Your Developer ID</h1>
-  <ol>
-    <li>1. Access To <a href="https://api.iijmio.jp/">https://api.iijmio.jp/</a></li>
-    <li>2. Get Developer ID with your IIJMio account.</li>
-    <li>3. Enter the Developer ID and register Electron Miopon as an your app.</li>
-  </ol>
 
-  <label for="developer-id">Developer ID</label>
-  <input type="text" id="developer-id" />
-  <button type="button" id="register">register</button>
+  <section class="section">
+    <div class="container">
+      <h1 class="title">Configuration</h1>
+      <div class="box">
+        <h2 class="subtitle">How to get your Developer ID:</h2>
+        <div class="content">
+          <ol>
+            <li>Access To <a href="#" class="external-link" data-href="https://api.iijmio.jp/">https://api.iijmio.jp/</a></li>
+            <li>Create Developer ID.</li>
+            <li>Set up your miopon App.</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="field has-addons">
+        <div class="control">
+          <input class="input" type="text" id="developer-id" placeholder="Developer ID..." />
+        </div>
+        <div class="control">
+          <button class="button is-primary" type="button" id="register">Save</button>
+        </div>
+      </div>
+      <div class="content">
+        <p>Developer ID will be saved locally and you will be asked your credentials to get access token for IIJMio API.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="content has-text-centered">
+      <p>
+        <strong>Electron Miopon</strong> by <a href="https://github.com/kamataryo">kamataryo</a>.
+      </p>
+    </div>
+  </footer>
+
+  <script src="./script.js"></script>
   <script>
     const {
       ipcRenderer
     } = require('electron')
+
     const button = document.getElementById('register')
     const input = document.getElementById('developer-id')
+
     button.addEventListener('click', () => {
       const developerId = input.value
       ipcRenderer.send('developer_id', developerId)

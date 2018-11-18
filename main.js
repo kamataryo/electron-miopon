@@ -1,18 +1,19 @@
 const { app } = require('electron')
-const Store = require('./lib/store')
+const { configureElectron, configureApp } = require('./lib/configure')
 const { getAccessToken, setAccessToken } = require('./lib/keychain')
-const oAuth = require('./lib/o-auth')
-const axios = require('axios')
+const Store = require('./lib/store')
+const authorization = require('./lib/api/authorization')
+const getCouponInfo = require('./lib/api/coupon')
+
 const store = new Store({ configName: 'user-data' })
-const configure = require('./lib/configure')
 const { updateTray } = require('./lib/tray')
 const EXPIRES_AT = 'expires_at'
 const DEVELOPER_ID = 'developer_id'
 
 const request = () =>
-  axios
-    .get('https://api.iijmio.jp/mobile/d/v2/coupon/')
+  getCouponInfo()
     .then(({ data }) => updateTray(data))
+    .catch(() => updateTray([]))
 
 Promise.all([
   app.whenReady(),
@@ -22,11 +23,13 @@ Promise.all([
 ])
   .catch(err => console.log(err.type))
   .then(result => {
+    configureElectron()
+
     const [_0, accessToken, expiresAt, developerId] = result
     const isExpired = Date.now() > expiresAt
 
     return !accessToken || isExpired || !developerId
-      ? oAuth(developerId)
+      ? authorization(developerId)
       : { developerId, accessToken, expiresAt }
   })
   .then(({ developerId, accessToken, expiresAt }) => {
@@ -35,8 +38,7 @@ Promise.all([
     setAccessToken(accessToken)
     store.set(EXPIRES_AT, expiresAt)
 
-    // configure app
-    configure(developerId, accessToken)
+    configureApp(developerId, accessToken)
 
     // start loop
     request()
