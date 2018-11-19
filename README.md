@@ -2,8 +2,6 @@
 
 ## TODOs
 
-- display phone number for each coupon
-- user alias for each phone number
 - detailed trafice for each phone number
 - production build
 - App Name settings
