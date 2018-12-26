@@ -17,7 +17,7 @@ const request = () =>
 
 Promise.all([
   app.whenReady(),
-  getAccessToken(),
+  getAccessToken().catch(err => console.log(err)),
   store.get(EXPIRES_AT),
   store.get(DEVELOPER_ID),
 ])
