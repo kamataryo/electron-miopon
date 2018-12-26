@@ -2,9 +2,10 @@
 
 ## TODOs
 
-- detailed trafice for each phone number
-- production build
-- App Name settings
+- production
+  - not start until run app twice
+  - Menu display is not controled. when appears and when not?
+  - cannot continue after oAuth
 - run at start up https://electronjs.org/docs/api/app#appsetloginitemsettingssettings-macos-windows
 - interval settings as a preference
 - initialization as a preference
